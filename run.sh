@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-cd dask-benchmarks
 git fetch origin
 
 for project in dask distributed
