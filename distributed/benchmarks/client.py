@@ -3,7 +3,7 @@ import copy
 
 import time
 
-from dask import delayed
+from dask import delayed, config
 from distributed import Client, Worker, wait, LocalCluster
 
 
@@ -37,9 +37,10 @@ class ClientSuite(object):
 
 class WorkerRestrictionsSuite(object):
 
-    params = [{"resource":1},None]
-
-    def setup(self,resource):
+    params = ([1,None], [100,1])
+    param_names = ["resource","steal_interval"]
+    
+    def setup(self,resource,steal_interval):
         cluster = LocalCluster(n_workers=1, threads_per_worker=1,
                                resources=resource, worker_class=Worker)
         spec = copy.deepcopy(cluster.new_worker_spec())
@@ -52,16 +53,16 @@ class WorkerRestrictionsSuite(object):
 
         self.client = client
 
-    def teardown(self,resource):
+    def teardown(self,resource,steal_interval):
         self.client.close()
 
-    def time_trivial_tasks(self,resource):
+    def time_trivial_tasks(self,resource,steal_interval):
         """
         Benchmark measuring the improvment from allowing new workers
         to steal tasks with resource restrictions.
         """
         client = self.client
-
+        config.set({"distributed.scheduler.work-stealing-interval":steal_interval})
         info = client.scheduler_info()
         workers = list(info['workers'])
         futures = client.map(slowinc, range(10),
