@@ -37,20 +37,14 @@ class ClientSuite(object):
 
 class WorkerRestrictionsSuite(object):
 
-    params = ([{"resource":1},{"resource":0}],[{"steal_interval":1},{"steal_interval":100}])
-    # params = (
-    #     ({"resource":"1"},{"steal_interval":"1"}),
-    #     ({"resource":None},{"steal_interval":"1"}),
-    #     )
-    # param_names = ["resource","steal_interval"]
-    
+    params = ([{"resource":1}, None],[{"steal_interval":1},{"steal_interval":100}])
+    param_names = ["resource","steal_interval"]
+
     def setup(self,resource,steal_interval):
-        if resource == 0:
-            resource = None
         cluster = LocalCluster(n_workers=1, threads_per_worker=1,
                                resources=resource, worker_class=Worker)
         spec = copy.deepcopy(cluster.new_worker_spec())
-        
+
         if resource:
             del spec[1]['options']['resources']
         cluster.worker_spec.update(spec)
